@@ -23,6 +23,7 @@ public class ContentBasedRecommender {
 	    	      });
 	    	    Dataset<Row> ratings = spark.createDataFrame(ratingsRDD, RatingVO.class);
 	    	    		     ratings.createOrReplaceTempView("ratings");
+		System.out.println("Movie Rating");
 	    	    		     ratings.show();
 
 	    	    Dataset<Row> moviesLikeCntDS = spark.sql("select movieId,avg(rating) averageRating from ratings group by movieId");
@@ -33,38 +34,39 @@ public class ContentBasedRecommender {
 	    	 	    	      				.map(row -> {
 	    	 	    	      				String[] strs = row.split("\\|");
 	    	 	    	      				
-	    	 	    	      				MovieVO mvo = new MovieVO();
-	    	 	    	      				   mvo.setMovieId(strs[0]);
-		    	 	    	      			   mvo.setMovieTitle(strs[1]);
-			    	 	    	    		   mvo.setReleaseDate(strs[2]);
-			    	 	    	    		  // mvo.setVideoReleaseDate(strs[3]);
-			    	 	    	    		   mvo.setImdbUrl(strs[4]);
-//			    	 	    	    		   mvo.setUnknown(strs[5]);
-			    	 	    	    		   mvo.setAction(strs[6]);
-			    	 	    	    		   mvo.setAdventure(strs[7]);
-			    	 	    	    		   mvo.setAnimation(strs[8]);
-			    	 	    	    		   mvo.setChildren(strs[9]);
-			    	 	    	    		   mvo.setComedy(strs[10]);
-			    	 	    	    		   mvo.setCrime(strs[11]);
-			    	 	    	    		   mvo.setDocumentary(strs[12]);
-			    	 	    	    		   mvo.setDrama(strs[13]);
-			    	 	    	    		   mvo.setFantasy(strs[14]);
-			    	 	    	    		   mvo.setFilmNoir(strs[15]);
-			    	 	    	    		   mvo.setHorror(strs[16]);
-			    	 	    	    		   mvo.setMusical(strs[17]);
-			    	 	    	    		   mvo.setMystery(strs[18]);
-			    	 	    	    		   mvo.setRomance(strs[19]);
-			    	 	    	    		   mvo.setSciFi(strs[20]);
-			    	 	    	    		   mvo.setThriller(strs[21]);
-			    	 	    	    		   mvo.setWar(strs[22]);
-			    	 	    	    		   mvo.setWestern(strs[23]);
-			    	 	    	    		   return mvo;
+	    	 	MovieVO mvo = new MovieVO();
+				 mvo.setMovieId(strs[0]);
+												   mvo.setMovieTitle(strs[1]);
+												   mvo.setReleaseDate(strs[2]);
+												  // mvo.setVideoReleaseDate(strs[3]);
+												   mvo.setImdbUrl(strs[4]);
+	//			    	 	    	    		   mvo.setUnknown(strs[5]);
+												   mvo.setAction(strs[6]);
+												   mvo.setAdventure(strs[7]);
+												   mvo.setAnimation(strs[8]);
+												   mvo.setChildren(strs[9]);
+												   mvo.setComedy(strs[10]);
+												   mvo.setCrime(strs[11]);
+												   mvo.setDocumentary(strs[12]);
+												   mvo.setDrama(strs[13]);
+												   mvo.setFantasy(strs[14]);
+												   mvo.setFilmNoir(strs[15]);
+												   mvo.setHorror(strs[16]);
+												   mvo.setMusical(strs[17]);
+												   mvo.setMystery(strs[18]);
+												   mvo.setRomance(strs[19]);
+												   mvo.setSciFi(strs[20]);
+												   mvo.setThriller(strs[21]);
+												   mvo.setWar(strs[22]);
+												   mvo.setWestern(strs[23]);
+												   return mvo;
 	    	 	    	      				});
 	    	 	Dataset<Row> movieDS = spark.createDataFrame(movieRdd.rdd(), MovieVO.class).join(moviesLikeCntDS, "movieId");
-	    	 				 movieDS.createOrReplaceTempView("movies");
-	    	 				 movieDS.show();
+				 movieDS.createOrReplaceTempView("movies");
+		System.out.println("Movies");
+				 movieDS.show();
 	    	    
-	    	 	Dataset<Row> movieDataDS = 
+	    	 	Dataset<Row> movieDataDS =
 	    	 			spark.sql("select m.movieId movieId1,m.movieTitle movieTitle1,m.action action1,m.adventure adventure1,"
 	    	 						+ "m.animation animation1,m.children children1,m.comedy comedy1,m.crime crime1,m.documentary documentary1,"
 	    	 						+ "m.drama drama1, m.fantasy fantasy1,m.filmNoir filmNoir1,m.horror horror1,m.musical musical1,m.mystery mystery1,"
@@ -74,9 +76,9 @@ public class ContentBasedRecommender {
 	    	 						+ "m2.drama drama2, m2.fantasy fantasy2,m2.filmNoir filmNoir2,m2.horror horror2,m2.musical musical2,m2.mystery mystery2,"
 	    	 						+ "m2.romance romance2,m2.sciFi sciFi2,m2.thriller thriller2,m2.war war2,m2.western western2,m2.averageRating averageRating2 "
 	    	 						+ "from movies m, movies m2 where m.movieId != m2.movieId");
-	    	 				
+
 	    	 				//movieDataDS.show();
-	    	 					
+
 	    	 	//euclid distance
 	    	 	JavaRDD<EuclidVO> euclidRdd = movieDataDS.javaRDD().map( row -> {
 	    	 		EuclidVO evo = new EuclidVO();
@@ -103,20 +105,20 @@ public class ContentBasedRecommender {
 	    	 		int war = Math.abs(Integer.parseInt(row.getString(18)) - Integer.parseInt(row.getString(39)) );
 	    	 		int western = Math.abs(Integer.parseInt(row.getString(19)) - Integer.parseInt(row.getString(40)) );
 	    	 		double likesCnt = Math.abs(row.getDouble(20) - row.getDouble(41) );
-	    	 		
-	    	 		double euclid = Math.sqrt(action * action + adventure * adventure + animation * animation + children * children + 
-	    	 							   comedy * comedy + crime * crime + documentary * documentary + drama * drama + 
-	    	 							   fantasy * fantasy + filmNoir * filmNoir + horror * horror + musical * musical + mystery * mystery + romance * romance + 
+
+	    	 		double euclid = Math.sqrt(action * action + adventure * adventure + animation * animation + children * children +
+	    	 							   comedy * comedy + crime * crime + documentary * documentary + drama * drama +
+	    	 							   fantasy * fantasy + filmNoir * filmNoir + horror * horror + musical * musical + mystery * mystery + romance * romance +
 	    	 							   scifi * scifi + thriller * thriller + war * war + western * western + likesCnt * likesCnt);
 	    	 	   evo.setEuclidDist(euclid);
 	    	 	   return evo;
 	    	 	});
-	    	 	
+
 	    	 	Dataset<Row> results = spark.createDataFrame(euclidRdd.rdd(), EuclidVO.class);
 	    	 				 results.createOrReplaceTempView("movieEuclids");
-	    	 				 
+
 	    	 				 spark.sql("select * from movieEuclids where movieId1 = 1 order by euclidDist asc").show(20);
-	    	 	
+
 	    	 				 	
 	    	    spark.stop();
 	}

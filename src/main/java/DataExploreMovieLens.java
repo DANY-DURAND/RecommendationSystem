@@ -24,7 +24,8 @@ public class DataExploreMovieLens {
 	    	    	ratings.createOrReplaceTempView("ratings");
 	    	    
 	    	    // 1. Counting movie by ratings
-	    	    Dataset<Row> ratingsGrps = spark.sql("select rating,count(*) from ratings group by rating");
-	    	    	ratingsGrps.show();
+	    	    Dataset<Row> ratingsGrps = spark.sql("select rating,count(*) " +
+						"from ratings group by rating");
+				ratingsGrps.show();
    }
 }
